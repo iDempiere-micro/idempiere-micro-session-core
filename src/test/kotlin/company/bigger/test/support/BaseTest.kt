@@ -1,6 +1,5 @@
 package company.bigger.test.support
 
-import company.bigger.service.UserService
 import org.junit.runner.RunWith
 import company.bigger.util.Ini
 import kotliquery.HikariCP
@@ -33,6 +32,5 @@ abstract class BaseTest {
 
     @Test
     fun test() {
-
     }
 }

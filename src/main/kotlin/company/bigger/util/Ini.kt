@@ -6,7 +6,7 @@ package company.bigger.util
  * Note some local connection variables (like `jwt.issuer`) if used once-only
  * are declared in the place where needed.
  */
-open class Ini (
+open class Ini(
     internal val url: String,
     internal val username: String,
     internal val password: String
