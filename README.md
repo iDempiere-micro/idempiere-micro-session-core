@@ -12,8 +12,8 @@ You can use it to:
 -   login a user and obtain a JWT token
 -   use the JWT token with GraphQL calls to [iDempiere Micro Spring backend](https://github.com/iDempiere-micro/idempiere-micro-spring) or [iDempire Micro OSGi backend](https://github.com/iDempiere-micro/idempiere-micro) (later).
 
-##Installation
+## Installation
 From [JitPack](https://jitpack.io/v/iDempiere-micro/idempiere-micro-session-core).
 
-##Usage
+## Usage
 Needs [HikariCP to be configured](https://github.com/seratch/kotliquery#hikaricp) by the module that is using idempiere-micro-session-core before the first call.
