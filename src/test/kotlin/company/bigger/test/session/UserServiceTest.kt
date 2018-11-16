@@ -22,19 +22,17 @@ class UserServiceTest : BaseTest() {
         const val System = "System"
     }
 
-    private var _userService: UserService? = null
-    protected val userService get() = _userService!!
+    private val userService = UserService(
+        LoginService(),
+        jwtSecret = randomString(20),
+        jwtIssuer = "Issuer"
+    )
 
     /**
      * Makes sure the hidden field to allow tweak the expiration is turned off before every test
      */
     @Before
     fun prepareExpiration() {
-        _userService = UserService(
-            LoginService(),
-            jwtSecret = randomString(20),
-            jwtIssuer = "Issuer"
-        )
         // be 100% sure the expiration works normally
         userService.overrideExpiration = null
     }

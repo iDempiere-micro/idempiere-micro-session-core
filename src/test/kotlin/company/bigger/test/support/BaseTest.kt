@@ -1,7 +1,6 @@
 package company.bigger.test.support
 
 import org.junit.runner.RunWith
-import company.bigger.util.Ini
 import kotliquery.HikariCP
 import org.junit.Before
 import org.junit.Test
@@ -22,10 +21,8 @@ abstract class BaseTest {
      */
     @Before
     open fun prepare() {
-        val ini = Ini(localhost, user, user)
-
         if (!setUpIsDone) {
-            HikariCP.default(ini.url, ini.username, ini.password)
+            HikariCP.default(localhost, user, user)
             setUpIsDone = true
         }
     }
