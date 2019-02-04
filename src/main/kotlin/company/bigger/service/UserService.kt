@@ -31,10 +31,6 @@ class UserService(
      */
     val jwtExpiration: Int = 14400
 ) {
-    companion object {
-        internal const val ROLE = "USER"
-    }
-
     // user login result by UserName
     private val users = mutableMapOf<String, UserLoginModelResponse>()
 

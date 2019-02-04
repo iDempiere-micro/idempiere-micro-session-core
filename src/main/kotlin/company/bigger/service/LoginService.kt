@@ -19,23 +19,21 @@ import java.security.NoSuchAlgorithmException
 private val log = KotlinLogging.logger {}
 
 /**
- * The login service to login the user.
+ * The login rest to login the user.
  * It validates the user in the database, check the password and is also responsible for user locking/unlocking.
- * Note this service does NOT
+ * Note this rest does NOT
  */
 class LoginService(
-    val USER_PASSWORD_HASH: String = "N",
-    val USER_LOCKING_MAX_ACCOUNT_LOCK_MINUTES: Int = 180,
-    val USER_LOCKING_MAX_INACTIVE_PERIOD_DAY: Int = 180,
-    val USER_LOCKING_MAX_PASSWORD_AGE_DAY: Int = 365,
-    val USER_LOCKING_MAX_LOGIN_ATTEMPT: Int = 10
+    private val hashPassword: Boolean = false,
+    private val maxAccountLockMinutes: Int = 180,
+    private val maxInactivePeriodDays: Int = 180,
+    private val maxLoggingAttempts: Int = 10
 ) {
-    private fun lockUser(session: Session, user: User) {
-        val MAX_INACTIVE_PERIOD_DAY = USER_LOCKING_MAX_INACTIVE_PERIOD_DAY.toInt()
 
-        if (MAX_INACTIVE_PERIOD_DAY > 0 && !user.isLocked && user.dateLastLogin != null) {
+    private fun lockUser(session: Session, user: User) {
+        if (maxInactivePeriodDays > 0 && !user.isLocked && user.dateLastLogin != null) {
             val days = getNumberOfDays(user.dateLastLogin)
-            if (days > MAX_INACTIVE_PERIOD_DAY) {
+            if (days > maxInactivePeriodDays) {
                 "/sql/lockUser.sql".asResource { s2 ->
                     session.run(queryOf(s2, user.id).asUpdate)
                 }
@@ -44,12 +42,9 @@ class LoginService(
     }
 
     private fun lockOrUnlockUsers(session: Session, users: List<User>) {
-        val MAX_ACCOUNT_LOCK_MINUTES = USER_LOCKING_MAX_ACCOUNT_LOCK_MINUTES.toInt()
-        val MAX_INACTIVE_PERIOD_DAY = USER_LOCKING_MAX_INACTIVE_PERIOD_DAY.toInt()
-
         for (user in users) {
             lockUser(session, user)
-            unlockUser(session, user, MAX_ACCOUNT_LOCK_MINUTES, MAX_INACTIVE_PERIOD_DAY)
+            unlockUser(session, user, maxAccountLockMinutes, maxInactivePeriodDays)
         }
     }
 
@@ -81,9 +76,6 @@ class LoginService(
     }
 
     private fun doFilterAuthenticatedUsers(users: List<User>, appPwd: String): Pair<List<User>, List<User>> {
-        val hashPassword = getBooleanValue(USER_PASSWORD_HASH)
-        val MAX_PASSWORD_AGE = USER_LOCKING_MAX_PASSWORD_AGE_DAY.toInt()
-
         val authenticatedUsers = users.filter {
             when {
                 hashPassword -> authenticateHash(it, appPwd)
@@ -98,11 +90,9 @@ class LoginService(
     }
 
     private fun lockUnauthenticatedUsers(session: Session, failedUsers: List<User>) {
-        val maxLoginAttempt = USER_LOCKING_MAX_LOGIN_ATTEMPT.toInt()
-
         failedUsers.forEach {
             if (!it.isLocked) {
-                lockUnauthenticatedUser(session, it, maxLoginAttempt)
+                lockUnauthenticatedUser(session, it, maxLoggingAttempts)
             }
         }
     }

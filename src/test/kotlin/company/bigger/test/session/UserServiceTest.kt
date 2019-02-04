@@ -3,8 +3,8 @@ package company.bigger.test.session
 import company.bigger.dto.UserLoginModel
 import company.bigger.service.LoginService
 import company.bigger.service.UserService
-import company.bigger.test.support.BaseTest
 import company.bigger.test.support.randomString
+import kotliquery.HikariCP
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -12,15 +12,22 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
+internal val sessionUrl = System.getenv("SESSION_URL") ?: "jdbc:postgresql://localhost:5433/idempiere"
+
 /**
  * Testing the user service
  */
-class UserServiceTest : BaseTest() {
+class UserServiceTest  {
     companion object {
         const val GardenAdmin = "GardenAdmin"
         const val GardenUser = "GardenUser"
         const val System = "System"
     }
+
+    init {
+        HikariCP.default(sessionUrl, "adempiere", "adempiere")
+    }
+
 
     private val userService = UserService(
         LoginService(),
@@ -129,7 +136,7 @@ class UserServiceTest : BaseTest() {
         val result2 = userService.login(UserLoginModel(GardenUser, GardenUser))
         val user2 = userService.validateToken(result2?.token ?: "")
 
-        assertNotEquals(user2?.token, user?.token)
+        assertNotEquals(user2?.token, user.token)
 
         assertNotNull(user2)
         val user3 = userService.validateToken(result?.token ?: "")

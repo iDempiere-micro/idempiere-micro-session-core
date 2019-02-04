@@ -68,6 +68,13 @@
             <version>1.6.20</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.iDempiere-micro</groupId>
+            <artifactId>idempiere-micro-test-support</artifactId>
+            <version>0.0.3</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -123,5 +130,10 @@
             </plugin>            
         </plugins>
     </build>
-
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 </project>
