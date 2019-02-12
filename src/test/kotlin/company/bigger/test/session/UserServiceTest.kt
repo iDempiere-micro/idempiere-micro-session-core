@@ -5,6 +5,8 @@ import company.bigger.service.LoginService
 import company.bigger.service.UserService
 import company.bigger.test.support.randomString
 import kotliquery.HikariCP
+import kotliquery.sessionOf
+import kotliquery.using
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -49,8 +51,10 @@ class UserServiceTest  {
      */
     @Test
     fun `GardenUser can login (service)`() {
-        val result = userService.login(UserLoginModel(GardenUser, GardenUser))
-        assertNotNull(result?.token)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val result = userService.login(session, UserLoginModel(GardenUser, GardenUser))
+            assertNotNull(result?.token)
+        }
     }
 
     /**
@@ -58,8 +62,10 @@ class UserServiceTest  {
      */
     @Test
     fun `GardenUser can not login with wrong password (service)`() {
-        val result = userService.login(UserLoginModel(GardenUser, randomString(20)))
-        assertNull(result?.token)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val result = userService.login(session, UserLoginModel(GardenUser, randomString(20)))
+            assertNull(result?.token)
+        }
     }
 
     /**
@@ -67,8 +73,10 @@ class UserServiceTest  {
      */
     @Test
     fun `Joe Sales cannot login as he does not have a password (service)`() {
-        val result = userService.login(UserLoginModel("Joe Sales", ""))
-        assertNull(result?.token)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val result = userService.login(session, UserLoginModel("Joe Sales", ""))
+            assertNull(result?.token)
+        }
     }
 
     /**
@@ -76,8 +84,10 @@ class UserServiceTest  {
      */
     @Test
     fun `System can not login as he does not have the business partner associated (service)`() {
-        val result = userService.login(UserLoginModel(System, System))
-        assertNull(result?.token)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val result = userService.login(session, UserLoginModel(System, System))
+            assertNull(result?.token)
+        }
     }
 
     /**
@@ -85,15 +95,17 @@ class UserServiceTest  {
      */
     @Test
     fun `GardenAdmin can not login after too much unsuccessful logins (service)`() {
-        val okResult = userService.login(UserLoginModel(GardenAdmin, GardenAdmin))
-        assertNotNull(okResult?.token)
-        val badPassword = randomString(20)
-        for (i in 1..20) {
-            val result = userService.login(UserLoginModel(GardenAdmin, badPassword))
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val okResult = userService.login(session, UserLoginModel(GardenAdmin, GardenAdmin))
+            assertNotNull(okResult?.token)
+            val badPassword = randomString(20)
+            for (i in 1..20) {
+                val result = userService.login(session, UserLoginModel(GardenAdmin, badPassword))
+                assertNull(result?.token)
+            }
+            val result = userService.login(session, UserLoginModel(GardenAdmin, GardenAdmin))
             assertNull(result?.token)
         }
-        val result = userService.login(UserLoginModel(GardenAdmin, GardenAdmin))
-        assertNull(result?.token)
     }
 
     /**
@@ -101,10 +113,12 @@ class UserServiceTest  {
      */
     @Test
     fun `GardenUser can login (service) and the token is valid`() {
-        val result = userService.login(UserLoginModel(GardenUser, GardenUser))
-        val user = userService.validateToken(result?.token ?: "")
-        assertEquals(GardenUser, user?.loginName)
-        assertEquals(11, user?.clientId)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val result = userService.login(session, UserLoginModel(GardenUser, GardenUser))
+            val user = userService.validateToken(result?.token ?: "")
+            assertEquals(GardenUser, user?.loginName)
+            assertEquals(11, user?.clientId)
+        }
     }
 
     /**
@@ -112,13 +126,15 @@ class UserServiceTest  {
      */
     @Test
     fun `GardenUser can login (service) and the token is not valid if expired`() {
-        // we set the expiration the way it is immediately invalid
-        userService.overrideExpiration = -1
-        val result = userService.login(UserLoginModel(GardenUser, GardenUser))
-        // return back to normal expiration
-        userService.overrideExpiration = null
-        val user = userService.validateToken(result?.token ?: "")
-        assertNull(user)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            // we set the expiration the way it is immediately invalid
+            userService.overrideExpiration = -1
+            val result = userService.login(session, UserLoginModel(GardenUser, GardenUser))
+            // return back to normal expiration
+            userService.overrideExpiration = null
+            val user = userService.validateToken(result?.token ?: "")
+            assertNull(user)
+        }
     }
 
     /**
@@ -126,21 +142,23 @@ class UserServiceTest  {
      */
     @Test
     fun `GardenUser can login twice(service) and the first token is invalid then`() {
-        val result = userService.login(UserLoginModel(GardenUser, GardenUser))
-        val user = userService.validateToken(result?.token ?: "")
-        assertNotNull(user)
+        using(sessionOf(HikariCP.dataSource())) { session ->
+            val result = userService.login(session, UserLoginModel(GardenUser, GardenUser))
+            val user = userService.validateToken(result?.token ?: "")
+            assertNotNull(user)
 
-        // we need to sleep here for the while in order to make the tokens different
-        Thread.sleep(1500)
+            // we need to sleep here for the while in order to make the tokens different
+            Thread.sleep(1500)
 
-        val result2 = userService.login(UserLoginModel(GardenUser, GardenUser))
-        val user2 = userService.validateToken(result2?.token ?: "")
+            val result2 = userService.login(session, UserLoginModel(GardenUser, GardenUser))
+            val user2 = userService.validateToken(result2?.token ?: "")
 
-        assertNotEquals(user2?.token, user.token)
+            assertNotEquals(user2?.token, user.token)
 
-        assertNotNull(user2)
-        val user3 = userService.validateToken(result?.token ?: "")
-        assertNull(user3)
+            assertNotNull(user2)
+            val user3 = userService.validateToken(result?.token ?: "")
+            assertNull(user3)
+        }
     }
 
     /**

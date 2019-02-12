@@ -5,10 +5,8 @@ import company.bigger.dto.UserLoginModelResponse
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import kotliquery.HikariCP
-import kotliquery.sessionOf
-import kotliquery.using
-import java.util.Date
+import kotliquery.Session
+import java.util.*
 
 /**
  * The service to login the user and return the token.
@@ -49,7 +47,7 @@ class UserService(
                 .signWith(SignatureAlgorithm.HS256, jwtSecret).compact()
     }
 
-    private fun findByToken(token: String) = users.values.firstOrNull { it.token == token }
+    fun findByToken(token: String) = users.values.firstOrNull { it.token == token }
 
     /**
      * Make sure the token is valid. The io.jsonwebtoken makes sure the token is not expired.
@@ -82,11 +80,9 @@ class UserService(
      * Login the user and return the token if successful together with other helpful attributes.
      * See also [LoginService]
      */
-    fun login(login: UserLoginModel): UserLoginModelResponse? {
-        return using(sessionOf(HikariCP.dataSource())) { session ->
-            val user = loginService.login(session, login)
-            if (user.logged) updateToken(user) else user
-        }
+    fun login(session: Session, login: UserLoginModel): UserLoginModelResponse? {
+        val user = loginService.login(session, login)
+        return if (user.logged) updateToken(user) else user
     }
 
     /**
