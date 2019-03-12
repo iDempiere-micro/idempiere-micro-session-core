@@ -37,7 +37,9 @@ internal fun unlockUser(session: Session, user: User, MAX_ACCOUNT_LOCK_MINUTES: 
         if (MAX_INACTIVE_PERIOD_DAY > 0 && user.dateLastLogin != null) {
             val days = getNumberOfDays(user.dateLastLogin)
             days > MAX_INACTIVE_PERIOD_DAY
-        } else { false }
+        } else {
+            false
+        }
 
     if (!inactive) {
         "/sql/unlockUser.sql".asResource {
@@ -60,6 +62,14 @@ internal fun lockUnauthenticatedUser(session: Session, failedUser: User, maxLogi
         else -> false
     }
     "/sql/updateUserWithFailedCount.sql".asResource { s ->
-        session.run(queryOf(s, if (reachMaxAttempt)"Y" else "N", count, if (reachMaxAttempt) Timestamp(Date().time) else null, failedUser.id).asUpdate)
+        session.run(
+            queryOf(
+                s,
+                if (reachMaxAttempt) "Y" else "N",
+                count,
+                if (reachMaxAttempt) Timestamp(Date().time) else null,
+                failedUser.id
+            ).asUpdate
+        )
     }
 }

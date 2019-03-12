@@ -25,10 +25,10 @@ jobs:
       SESSION_USERNAME: adempiere
       SESSION_PASSWORD: adempiere
       JWT_SECRET: Em3u7dCZ2QSvSGSGSRFUTfrwgu3WjfU2rHZxSjNSqU5x89C3jXPL6WLMW7dTE6rd9NRgWAwUWHkj8ZLfbCNU8uVfv9kuBmWCYPkk776A5jQ2LeJ76bZbdhXN
-      JWT_ISSUER: Kotlin_Spring      
+      JWT_ISSUER: Kotlin_Spring
 
     steps:
-      - setup_remote_docker      
+      - setup_remote_docker
       - checkout
 
       - run:
@@ -41,7 +41,7 @@ jobs:
           name: Installing Dependencies
           command: |
             sudo apt-get install postgresql-client
-            
+
       - run:
           name: Wait for db
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
@@ -49,9 +49,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "pom.xml" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run: mvn dependency:go-offline
 
@@ -68,7 +68,7 @@ jobs:
             ( cd /tmp; PGPASSWORD=adempiere psql idempiere -h localhost -p 5432 -U adempiere -f ./V1__iDempiere_5.1.0.sql )
 
       # run tests!
-      - run: 
+      - run:
           name: Package code
           command: |
             mvn package

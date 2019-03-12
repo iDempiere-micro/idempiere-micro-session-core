@@ -2,14 +2,13 @@ package company.bigger.service
 
 import company.bigger.dto.ILogin
 import company.bigger.dto.UserLoginModelResponse
-import company.bigger.util.asResource
-import company.bigger.util.getBooleanValue
-import company.bigger.util.getSHA512Hash
-import company.bigger.util.convertHexString
 import company.bigger.util.User
+import company.bigger.util.asResource
+import company.bigger.util.getNumberOfDays
 import company.bigger.util.unlockUser
 import company.bigger.util.lockUnauthenticatedUser
-import company.bigger.util.getNumberOfDays
+import company.bigger.util.getSHA512Hash
+import company.bigger.util.convertHexString
 import kotliquery.Session
 import kotliquery.queryOf
 import mu.KotlinLogging
@@ -57,11 +56,13 @@ class LoginService(
         }
 
         return "/sql/findByUsername.sql".asResource { s ->
-            val usersQuery = queryOf(s, appUser, appUser).map { row -> User(
-                row.int(1), row.boolean(42), row.sqlTimestampOrNull(43), row.sqlTimestampOrNull(46),
-                row.stringOrNull(11), row.stringOrNull(41), row.int(2), row.intOrNull(44),
-                row.string(9)
-            ) }.asList
+            val usersQuery = queryOf(s, appUser, appUser).map { row ->
+                User(
+                    row.int(1), row.boolean(42), row.sqlTimestampOrNull(43), row.sqlTimestampOrNull(46),
+                    row.stringOrNull(11), row.stringOrNull(41), row.int(2), row.intOrNull(44),
+                    row.string(9)
+                )
+            }.asList
 
             val users = session.run(usersQuery)
 
@@ -153,7 +154,8 @@ class LoginService(
     private fun checkUserAccess(session: Session, user: User): Boolean {
         val businessPartnersIds: List<Int?> = "/sql/checkUserAccess.sql".asResource { s ->
             val usersQuery = queryOf(s, user.id).map { row ->
-                    row.intOrNull(2) }.asList
+                row.intOrNull(2)
+            }.asList
 
             session.run(usersQuery)
         }

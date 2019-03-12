@@ -19,7 +19,7 @@ internal val sessionUrl = System.getenv("SESSION_URL") ?: "jdbc:postgresql://loc
 /**
  * Testing the user service
  */
-class UserServiceTest  {
+class UserServiceTest {
     companion object {
         const val GardenAdmin = "GardenAdmin"
         const val GardenUser = "GardenUser"
@@ -29,7 +29,6 @@ class UserServiceTest  {
     init {
         HikariCP.default(sessionUrl, "adempiere", "adempiere")
     }
-
 
     private val userService = UserService(
         LoginService(),

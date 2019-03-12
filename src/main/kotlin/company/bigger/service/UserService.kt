@@ -6,7 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import kotliquery.Session
-import java.util.*
+import java.util.Date
 
 /**
  * The service to login the user and return the token.
@@ -40,11 +40,11 @@ class UserService(
     private fun newToken(user: UserLoginModelResponse): String {
         val expirationInMillis = overrideExpiration ?: (jwtExpiration * 60 * 1000)
         return Jwts.builder()
-                .setIssuedAt(Date())
-                .setSubject(user.loginName)
-                .setIssuer(jwtIssuer)
-                .setExpiration(Date(System.currentTimeMillis() + expirationInMillis))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret).compact()
+            .setIssuedAt(Date())
+            .setSubject(user.loginName)
+            .setIssuer(jwtIssuer)
+            .setExpiration(Date(System.currentTimeMillis() + expirationInMillis))
+            .signWith(SignatureAlgorithm.HS256, jwtSecret).compact()
     }
 
     fun findByToken(token: String) = users.values.firstOrNull { it.token == token }
@@ -59,7 +59,7 @@ class UserService(
     private fun isTokenValid(token: String, user: UserLoginModelResponse?): Boolean {
         try {
             val claims = Jwts.parser().setSigningKey(jwtSecret)
-                    .parseClaimsJws(token).body
+                .parseClaimsJws(token).body
             // we do not check for the expiration, that is handled by DefaultJwtParser.parse
             // would throw something like:
             // io.jsonwebtoken.ExpiredJwtException: JWT expired at 2018-11-15T13:43:41Z. Current time: 2018-11-15T13:43:41Z,

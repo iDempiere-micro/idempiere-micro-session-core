@@ -7,7 +7,7 @@ package company.bigger.dto
 data class UserLoginModelResponse(
     /**
      * Was the request authenticated?
-      */
+     */
     override val logged: Boolean = false,
     /**
      * Then token to be then sent with the requests
