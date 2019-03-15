@@ -3,18 +3,30 @@ package company.bigger.test.session
 import company.bigger.dto.UserLoginModel
 import company.bigger.service.LoginService
 import company.bigger.service.UserService
-import company.bigger.test.support.randomString
 import kotliquery.HikariCP
 import kotliquery.sessionOf
 import kotliquery.using
 import org.junit.Before
 import org.junit.Test
+import java.util.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 internal val sessionUrl = System.getenv("SESSION_URL") ?: "jdbc:postgresql://localhost:5433/idempiere"
+
+/**
+ * Generate a random string (small letters)
+ */
+fun randomString(length: Int): String {
+    fun ClosedRange<Char>.randomString(length: Int) =
+        (1..length)
+            .map { (Random().nextInt(endInclusive.toInt() - start.toInt()) + start.toInt()).toChar() }
+            .joinToString("")
+    return ('a'..'z').randomString(length)
+}
+
 
 /**
  * Testing the user service
