@@ -27,7 +27,6 @@ fun randomString(length: Int): String {
     return ('a'..'z').randomString(length)
 }
 
-
 /**
  * Testing the user service
  */
